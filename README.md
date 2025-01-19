@@ -1,2 +1,2 @@
-# CS3305_Project
-Future repository for CS3305
+# Unnamed Text Editor
+Future repository placeholder for an unnamed text editor
