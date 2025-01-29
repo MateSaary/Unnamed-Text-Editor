@@ -1,6 +1,7 @@
 module github.com/Leda-Editor/Leda-Text-Editor
 
-go 1.22.10
+go 1.23.1
+
 
 require gioui.org v0.8.0
 
