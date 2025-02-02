@@ -1,19 +1,24 @@
 package main
 
 import (
-	"image/color"
 	"log"
 	"os"
 
 	"gioui.org/app"
+	"gioui.org/unit"
+
+	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/text"
+	"gioui.org/widget"
 	"gioui.org/widget/material"
 )
 
 func main() {
+
 	go func() {
 		window := new(app.Window)
+		window.Option(app.Title("Leda Text Editor"))
+
 		err := run(window)
 		if err != nil {
 			log.Fatal(err)
@@ -21,34 +26,35 @@ func main() {
 		os.Exit(0)
 	}()
 	app.Main()
+
 }
 
 func run(window *app.Window) error {
 	theme := material.NewTheme()
 	var ops op.Ops
+
+	editor := new(widget.Editor)
+	editor.SingleLine = false
 	for {
 		switch e := window.Event().(type) {
 		case app.DestroyEvent:
 			return e.Err
 		case app.FrameEvent:
-			// This graphics context is used for managing the rendering state.
 			gtx := app.NewContext(&ops, e)
 
-			// Define an large label with an appropriate text:
-			title := material.H1(theme, "Hello, Gio")
-
-			// Change the color of the label.
-			maroon := color.NRGBA{R: 127, G: 0, B: 0, A: 255}
-			title.Color = maroon
-
-			// Change the position of the label.
-			title.Alignment = text.Middle
-
-			// Draw the label to the graphics context.
-			title.Layout(gtx)
-
-			// Pass the drawing operations to the GPU.
+			addEditor(&gtx, theme, editor)
 			e.Frame(gtx.Ops)
 		}
 	}
+}
+
+func addEditor(gtx *layout.Context, theme *material.Theme, editor *widget.Editor) {
+	layout.Flex{Axis: layout.Vertical}.Layout(*gtx,
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			return layout.UniformInset(unit.Dp(theme.TextSize)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				return material.Editor(theme, editor, "Enter Text ...").Layout(gtx)
+			})
+		}),
+	)
+
 }
