@@ -1,13 +1,13 @@
 package handling
 
-import "gioui.org/widget"
+import "fyne.io/fyne/v2/widget"
 
 // Editor wraps the text editor widget.
 type Editor struct {
-	widget.Editor
+	Widget *widget.Entry
 }
 
 // NewEditor creates a new markdown editor.
 func NewEditor() *Editor {
-	return &Editor{}
+	return &Editor{Widget: widget.NewMultiLineEntry()}
 }

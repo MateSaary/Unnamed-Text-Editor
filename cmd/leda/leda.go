@@ -1,25 +1,26 @@
 package main
 
 import (
-	"log"
-	"os"
-
-	"gioui.org/app"
-	"gioui.org/font/gofont"
-
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
 	ui "github.com/Leda-Editor/Leda-Text-Editor/pkg/ui"
 )
 
 func main() {
-	th := ui.NewTheme(gofont.Collection())
-	ui := ui.NewUI(th)
+	// Initialize Fyne Application.
+	app := app.New()
 
-	go func() {
-		if err := ui.Loop(); err != nil {
-			log.Fatal(err)
-		}
-		os.Exit(0)
-	}()
+	// Create a new window for the application
+	window := app.NewWindow("Leda Text Editor")
 
-	app.Main()
+	// Initialize UI.
+	ledaUI := ui.NewUI(app, window)
+
+	// Set up window layout.
+	window.SetContent(ledaUI.Layout())
+
+	// Set window size.
+	window.Resize(fyne.NewSize(800, 600))
+	// Display the window and start the event loop.
+	window.ShowAndRun()
 }
