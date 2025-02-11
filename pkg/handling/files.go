@@ -1,14 +1,14 @@
 package handling
 
 import (
-	"io/ioutil"
+	"io"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
-//opens a file dialog and loads the selected file's content into the editor.
+// opens a file dialog and loads the selected file's content into the editor.
 func OpenFile(window fyne.Window, editor *widget.Entry) {
 	dialog.ShowFileOpen(func(reader fyne.URIReadCloser, err error) {
 		if err != nil {
@@ -20,7 +20,7 @@ func OpenFile(window fyne.Window, editor *widget.Entry) {
 		}
 		defer reader.Close()
 
-		data, err := ioutil.ReadAll(reader)
+		data, err := io.ReadAll(reader)
 		if err != nil {
 			dialog.ShowError(err, window)
 			return
@@ -30,7 +30,7 @@ func OpenFile(window fyne.Window, editor *widget.Entry) {
 	}, window)
 }
 
-//opens a file dialog and saves the editor's content to the selected file.
+// opens a file dialog and saves the editor's content to the selected file.
 func SaveFile(window fyne.Window, editor *widget.Entry) {
 	dialog.ShowFileSave(func(writer fyne.URIWriteCloser, err error) {
 		if err != nil {
@@ -50,7 +50,7 @@ func SaveFile(window fyne.Window, editor *widget.Entry) {
 	}, window)
 }
 
-//clears the editor's content.
+// clears the editor's content.
 func ClearEditor(editor *widget.Entry) {
 	editor.SetText("")
 }
