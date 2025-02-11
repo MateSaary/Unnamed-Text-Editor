@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	handling "github.com/Leda-Editor/Leda-Text-Editor/pkg/handling"
 )
 
 // UI specifies the user interface.
@@ -22,7 +23,7 @@ type UI struct {
 	Markdown *widget.RichText
 	// MenuBar adds a menu to the window.
 	MenuBar *fyne.Container
-	// CHaracterLabel & LineLabel creates labels for the respective counters.
+	// CharacterLabel & LineLabel creates labels for the respective counters.
 	CharacterLabel *widget.Label
 	LineLabel      *widget.Label
 }
@@ -79,9 +80,9 @@ func (ui *UI) Layout() fyne.CanvasObject {
 // Creates a functional menu bar.
 func (ui *UI) CreateMenuBar() *fyne.Container {
 	fileMenu := fyne.NewMenu("File",
-		fyne.NewMenuItem("Open", func() {}),
-		fyne.NewMenuItem("Save", func() {}),
-		fyne.NewMenuItem("Exit", func() { ui.Window.Close() }),
+		fyne.NewMenuItem("Open", func() {handling.OpenFile(ui.Window, ui.Editor)}),
+		fyne.NewMenuItem("Save", func() {handling.SaveFile(ui.Window, ui.Editor)}),
+		fyne.NewMenuItem("Exit", func() {handling.ClearEditor(ui.Editor)}),
 	)
 
 	viewMenu := fyne.NewMenu("View",
