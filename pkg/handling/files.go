@@ -20,7 +20,7 @@ func OpenFile(window fyne.Window, editor *widget.Entry) {
 		}
 		defer reader.Close()
 
-		data, err := ioutil.ReadAll(reader)
+		data, err := io.ReadAll(reader)
 		if err != nil {
 			dialog.ShowError(err, window)
 			return
