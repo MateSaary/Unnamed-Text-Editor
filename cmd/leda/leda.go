@@ -20,7 +20,7 @@ func main() {
 	window.SetContent(ledaUI.Layout())
 
 	// Set window size.
-	window.Resize(fyne.NewSize(800, 600))
+	window.Resize(fyne.NewSize(900, 700))
 	// Display the window and start the event loop.
 	window.ShowAndRun()
 }
