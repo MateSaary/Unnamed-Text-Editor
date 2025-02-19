@@ -86,7 +86,7 @@ func NewUI(app fyne.App, win fyne.Window) *UI {
 	return ui
 }
 
-// Updates Markdown Preview with proper markdown formatting.
+// Updates Markdown Preview.
 func (ui *UI) RenderMarkdown(input string) {
 	ui.Markdown.ParseMarkdown(input)
 	ui.Markdown.Refresh()
@@ -119,9 +119,14 @@ func (ui *UI) performSearch() {
 		return
 	}
 
+	if ui.OriginalText == "" {
+		ui.OriginalText = ui.Editor.Text
+	}
+
+	ui.Editor.SetText(ui.OriginalText)
+
 	ui.Matches = []int{}
 	text := ui.Editor.Text
-	ui.OriginalText = text
 
 	// Find all occurrences.
 	start := 0
@@ -146,31 +151,57 @@ func (ui *UI) performSearch() {
 	}
 }
 
-// Scroll to specific match .
+// Scroll to specific match.
 func (ui *UI) scrollToMatch(idx int) {
-	if len(ui.Matches) == 0 {
+	if len(ui.Matches) == 0 || idx < 0 || idx >= len(ui.Matches) {
 		return
 	}
 
-	cleanedText := strings.ReplaceAll(ui.Editor.Text, "➡️", "")
-	cleanedText = strings.ReplaceAll(cleanedText, "⬅️", "")
-	ui.Editor.SetText(cleanedText)
+	ui.Editor.SetText(ui.OriginalText)
 
 	// Get the current match index.
 	matchIdx := ui.Matches[idx]
 	ui.CurrentMatchIdx = idx
-
-	// Calculate cursor position.
-	ui.Editor.CursorColumn = matchIdx
-	ui.Editor.CursorRow = strings.Count(ui.Editor.Text[:matchIdx], "\n")
-
 	// Insert arrows around the match.
 	searchTerm := ui.SearchTermEntry.Text
 	matchLen := len(searchTerm)
 
-	if matchIdx >= 0 && matchIdx+matchLen <= len(ui.Editor.Text) {
-		highlighted := ui.Editor.Text[:matchIdx] + "⬅➡️" + searchTerm + "⬅️" + ui.Editor.Text[matchIdx+matchLen:]
-		ui.Editor.SetText(highlighted)
+	if matchIdx < 0 || matchIdx+matchLen > len(ui.OriginalText) {
+		return
+	}
+
+	highlighted := ui.OriginalText[:matchIdx] + "⬅️" + searchTerm + "➡️" + ui.OriginalText[matchIdx+matchLen:]
+	ui.Editor.SetText(highlighted)
+
+	ui.Editor.CursorColumn = matchIdx
+	ui.Editor.CursorRow = strings.Count(ui.Editor.Text[:matchIdx], "\n")
+
+	ui.ensureVisible(matchIdx)
+
+	ui.Editor.Refresh()
+}
+
+// Ensure the current match is fully visible.
+func (ui *UI) ensureVisible(position int) {
+	if position < 0 || position >= len(ui.Editor.Text) {
+		return
+	}
+
+	// Calculate line and column.
+	line := strings.Count(ui.Editor.Text[:position], "\n")
+	col := position - strings.LastIndex(ui.Editor.Text[:position], "\n") - 1
+
+	ui.Editor.CursorRow = line
+	ui.Editor.CursorColumn = col
+
+	if col > 10 {
+		ui.Editor.CursorColumn = col - 10
+	} else {
+		ui.Editor.CursorColumn = 0
+	}
+
+	if col+len(ui.SearchTermEntry.Text) < len(ui.Editor.Text)-10 {
+		ui.Editor.CursorColumn = col + 10
 	}
 
 	ui.Editor.Refresh()
@@ -181,10 +212,13 @@ func (ui *UI) previousMatch() {
 	if len(ui.Matches) == 0 {
 		return
 	}
+
 	ui.CurrentMatchIdx--
 	if ui.CurrentMatchIdx < 0 {
 		ui.CurrentMatchIdx = len(ui.Matches) - 1
 	}
+
+	ui.Editor.SetText(ui.OriginalText)
 	ui.scrollToMatch(ui.CurrentMatchIdx)
 }
 
@@ -193,10 +227,13 @@ func (ui *UI) nextMatch() {
 	if len(ui.Matches) == 0 {
 		return
 	}
+
 	ui.CurrentMatchIdx++
 	if ui.CurrentMatchIdx >= len(ui.Matches) {
 		ui.CurrentMatchIdx = 0
 	}
+
+	ui.Editor.SetText(ui.OriginalText)
 	ui.scrollToMatch(ui.CurrentMatchIdx)
 }
 
@@ -210,15 +247,16 @@ func (ui *UI) performReplaceCurrent() {
 	term := ui.SearchTermEntry.Text
 	replace := ui.ReplaceTermEntry.Text
 
-	// Clean any arrows from the text.
-	cleanedText := strings.ReplaceAll(ui.Editor.Text, "➡️", "")
-	cleanedText = strings.ReplaceAll(cleanedText, "⬅️", "")
+	if ui.OriginalText == "" {
+		ui.OriginalText = ui.Editor.Text
+	}
 
 	currentIdx := ui.Matches[ui.CurrentMatchIdx]
 
-	if currentIdx >= 0 && currentIdx+len(term) <= len(cleanedText) {
-		newText := cleanedText[:currentIdx] + replace + cleanedText[currentIdx+len(term):]
+	if currentIdx >= 0 && currentIdx+len(term) <= len(ui.OriginalText) {
+		newText := ui.OriginalText[:currentIdx] + replace + ui.OriginalText[currentIdx+len(term):]
 		ui.Editor.SetText(newText)
+		ui.OriginalText = newText
 	}
 
 	ui.performSearch()
@@ -234,20 +272,23 @@ func (ui *UI) performReplaceAll() {
 		return
 	}
 
-	cleanedText := strings.ReplaceAll(ui.Editor.Text, "➡️", "")
-	cleanedText = strings.ReplaceAll(cleanedText, "⬅️", "")
-
-	if !strings.Contains(cleanedText, term) {
-		dialog.ShowInformation("Replace", fmt.Sprintf("'%s' not found.", term), ui.Window)
-		return
+	if ui.OriginalText == "" {
+		ui.OriginalText = ui.Editor.Text
 	}
 
-	ui.Editor.SetText(strings.ReplaceAll(cleanedText, term, replace))
+	newText := strings.ReplaceAll(ui.OriginalText, term, replace)
+	ui.Editor.SetText(newText)
+	ui.OriginalText = newText
+
 	ui.performSearch()
 }
 
 // Toggle sidebar visibility.
 func (ui *UI) toggleSidebar() {
+	if ui.SidebarVisible {
+		ui.Editor.SetText(ui.OriginalText)
+		ui.OriginalText = ""
+	}
 	ui.SidebarVisible = !ui.SidebarVisible
 	ui.Window.SetContent(ui.Layout())
 }
