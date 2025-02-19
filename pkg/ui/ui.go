@@ -119,11 +119,11 @@ func OpenThemePickerModal(app fyne.App, win fyne.Window, ui *UI) {
 	modalBackground.Refresh()
 
 	// **Retrieve saved theme colors (or fallback to current theme)**
-	bg := loadColor(app, "custom_bg", colorToRGBA(theme.Color(theme.ColorNameBackground)))
-	fg := loadColor(app, "custom_fg", colorToRGBA(theme.Color(theme.ColorNameForeground)))
-	primary := loadColor(app, "custom_primary", colorToRGBA(theme.Color(theme.ColorNamePrimary)))
-	editorBg := loadColor(app, "custom_editor_bg", colorToRGBA(theme.Color(theme.ColorNameInputBackground)))
-	menuBg := loadColor(app, "custom_menu_bg", colorToRGBA(theme.Color(theme.ColorNameMenuBackground)))
+	bg := loadColor(app, custom_bg, colorToRGBA(theme.Color(theme.ColorNameBackground)))
+	fg := loadColor(app, custom_fg, colorToRGBA(theme.Color(theme.ColorNameForeground)))
+	primary := loadColor(app, custom_primary, colorToRGBA(theme.Color(theme.ColorNamePrimary)))
+	editorBg := loadColor(app, custom_editor_bg, colorToRGBA(theme.Color(theme.ColorNameInputBackground)))
+	menuBg := loadColor(app, custom_menu_bg, colorToRGBA(theme.Color(theme.ColorNameMenuBackground)))
 
 	// **Ensure modal background correctly matches selected background**
 	modalBackground.FillColor = bg

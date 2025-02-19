@@ -10,6 +10,15 @@ import (
 	"fyne.io/fyne/v2/theme"
 )
 
+const (
+	theme_variant    = "theme_variant"
+	custom_bg        = "custom_bg"
+	custom_fg        = "custom_fg"
+	custom_primary   = "custom_primary"
+	custom_editor_bg = "custom_editor_bg"
+	custom_menu_bg   = "custom_menu_bg"
+)
+
 // ApplyUserTheme applies the last saved theme (light, dark, or custom).
 func ApplyUserTheme(ui *UI) {
 	// Get the correct background color from the active theme
@@ -32,7 +41,7 @@ func ApplyUserTheme(ui *UI) {
 // ToggleDarkMode switches between light and dark themes dynamically.
 func ToggleDarkMode(app fyne.App, ui *UI) {
 	// Retrieve saved theme preference
-	savedTheme := app.Preferences().StringWithFallback("theme_variant", "default")
+	savedTheme := app.Preferences().StringWithFallback(theme_variant, "default")
 
 	// If a custom theme is active, reset to default before toggling
 	if savedTheme == "custom" {
@@ -42,10 +51,10 @@ func ToggleDarkMode(app fyne.App, ui *UI) {
 
 	// Toggle between light and dark
 	if savedTheme == "dark" {
-		app.Preferences().SetString("theme_variant", "light")
+		app.Preferences().SetString(theme_variant, "light")
 		app.Settings().SetTheme(theme.LightTheme()) // Switch to light mode
 	} else {
-		app.Preferences().SetString("theme_variant", "dark")
+		app.Preferences().SetString(theme_variant, "dark")
 		app.Settings().SetTheme(theme.DarkTheme()) // Switch to dark mode
 	}
 
@@ -57,11 +66,11 @@ func ToggleDarkMode(app fyne.App, ui *UI) {
 // Resets the theme back to the default Fyne theme and removes saved colors.
 func resetToDefaultTheme(app fyne.App) {
 	// Clear all custom colors from storage
-	app.Preferences().RemoveValue("custom_bg")
-	app.Preferences().RemoveValue("custom_fg")
-	app.Preferences().RemoveValue("custom_primary")
-	app.Preferences().RemoveValue("custom_editor_bg")
-	app.Preferences().RemoveValue("custom_menu_bg")
+	app.Preferences().RemoveValue(custom_bg)
+	app.Preferences().RemoveValue(custom_fg)
+	app.Preferences().RemoveValue(custom_primary)
+	app.Preferences().RemoveValue(custom_editor_bg)
+	app.Preferences().RemoveValue(custom_menu_bg)
 
 	// Reset to default Fyne theme
 	app.Settings().SetTheme(theme.DefaultTheme())
@@ -82,14 +91,14 @@ func (ui *UI) ApplyThemeToLayout() fyne.CanvasObject {
 // SetCustomTheme allows switching to a fully custom theme.
 func SetCustomTheme(app fyne.App, bg, fg, primary, editorBg, menuBg color.Color) {
 	app.Settings().SetTheme(NewCustomTheme(bg, fg, primary, editorBg, menuBg)) // Apply custom theme
-	app.Preferences().SetString("theme_variant", "custom")
+	app.Preferences().SetString(theme_variant, "custom")
 
 	// Save the colors in Preferences
-	saveColor(app, "custom_bg", bg)
-	saveColor(app, "custom_fg", fg)
-	saveColor(app, "custom_primary", primary)
-	saveColor(app, "custom_editor_bg", editorBg)
-	saveColor(app, "custom_menu_bg", menuBg)
+	saveColor(app, custom_bg, bg)
+	saveColor(app, custom_fg, fg)
+	saveColor(app, custom_primary, primary)
+	saveColor(app, custom_editor_bg, editorBg)
+	saveColor(app, custom_menu_bg, menuBg)
 }
 
 // Helper functions to save and load colors
@@ -117,6 +126,7 @@ func parseColor(s string, fallback color.RGBA) color.RGBA {
 	var r, g, b, a int
 	_, err := fmt.Sscanf(s, "%d,%d,%d,%d", &r, &g, &b, &a)
 	if err != nil {
+		fyne.LogError("Failed to parse color", err)
 		return fallback // Return fallback if parsing fails
 	}
 	return color.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
