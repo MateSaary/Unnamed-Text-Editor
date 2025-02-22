@@ -75,6 +75,8 @@ func NewUI(app fyne.App, win fyne.Window) *UI {
 	ApplyUserTheme(ui)
 	ui.Window.Content().Refresh()
 
+	ApplyUserTheme(ui)
+
 	// Update Markdown Preview whenever text changes.
 	ui.Editor.OnChanged = func(content string) {
 		ui.RenderMarkdown(content)
@@ -98,6 +100,7 @@ func (ui *UI) ZoomIn() {
 func (ui *UI) ZoomOut() {
 	ui.Theme.ZoomOut()
 }
+
 
 // Toggle visibility of Markdown preview.
 func (ui *UI) toggleMarkdownPreview() {

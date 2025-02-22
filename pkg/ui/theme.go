@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 )
 
+
 // Theme struct extends Fyne's theme with custom font sizes for zoom in/out.
 type Theme struct {
 	App      fyne.App // Add this field to access app preferences
@@ -136,7 +137,7 @@ func SetCustomTheme(app fyne.App, bg, fg, primary, editorBg, menuBg color.Color)
 	saveColor(app, custom_primary, primary)
 	saveColor(app, custom_editor_bg, editorBg)
 	saveColor(app, custom_menu_bg, menuBg)
-	saveColor(app, "custom_button_bg", buttonBg)
+	saveColor(app, custom_button_bg, buttonBg)
 }
 
 // ResetCustomTheme removes all custom colors and resets to default theme.
@@ -157,11 +158,11 @@ func ResetCustomTheme(app fyne.App, ui *UI) {
 	ui.Theme = &Theme{
 		App:      app,
 		Base:     theme.DefaultTheme(),
-		FontSize: currentFontSize, // Keep zoom level
+		FontSize: currentFontSize, 
 	}
 
 	app.Settings().SetTheme(ui.Theme)
-	ApplyUserTheme(ui) // Ensure the UI updates
+	ApplyUserTheme(ui)
 	ui.Window.Content().Refresh()
 }
 
