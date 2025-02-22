@@ -11,7 +11,6 @@ import (
 type CustomTheme struct {
 	Background       color.Color
 	Foreground       color.Color
-	Primary          color.Color
 	EditorBg         color.Color
 	MenuBg           color.Color
 	ButtonBackground color.Color
@@ -25,13 +24,15 @@ func (t *CustomTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant)
 	case theme.ColorNameForeground:
 		return t.Foreground
 	case theme.ColorNamePrimary:
-		return t.Primary
+		return t.Foreground
 	case theme.ColorNameInputBackground:
 		return t.EditorBg
 	case theme.ColorNameMenuBackground:
 		return t.MenuBg
 	case theme.ColorNameButton:
 		return t.ButtonBackground
+	case theme.ColorNameSeparator:
+		return t.Foreground
 	}
 	return theme.DefaultTheme().Color(name, variant) // Fallback to default
 }
@@ -56,9 +57,8 @@ func NewCustomTheme(bg, fg, primary, editorBg, menuBg, buttonBg color.Color) fyn
 	return &CustomTheme{
 		Background:       bg,
 		Foreground:       fg,
-		Primary:          primary,
 		EditorBg:         editorBg,
 		MenuBg:           menuBg,
-		ButtonBackground: primary,
+		ButtonBackground: buttonBg,
 	}
 }

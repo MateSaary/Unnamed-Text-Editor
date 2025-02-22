@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 )
 
@@ -192,5 +194,28 @@ func (ui *UI) toggleSidebar() {
 	}
 
 	ui.SidebarVisible = !ui.SidebarVisible
-	ui.Window.SetContent(ui.Layout())
+	ui.UpdateLayout()
+}
+
+func ShowSearchContainer(ui *UI, content fyne.CanvasObject) {
+	if ui.SearchAreaContainer == nil {
+		ui.SearchAreaContainer = container.NewVBox()
+	}
+
+	ui.SearchAreaContainer.Objects = []fyne.CanvasObject{content}
+	ui.SearchAreaContainer.Refresh()
+}
+
+func ShowSearchUI(enableReplace bool, ui *UI) {
+	if ui.SearchAreaContainer == nil {
+		ui.SearchAreaContainer = container.NewVBox()
+	}
+
+	ui.ReplaceTermEntry.Hide()
+	if enableReplace {
+		ui.ReplaceTermEntry.Show()
+	}
+
+	ui.SidebarVisible = true
+	ui.UpdateLayout()
 }
