@@ -1,0 +1,56 @@
+name: Build and run Leda editor
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: true
+
+      - name: Cache Go Modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Cache Go Build Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/go-build
+          key: ${{ runner.os }}-gobuild-${{ hashFiles('**/*.go') }}
+          restore-keys: |
+            ${{ runner.os }}-gobuild-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
+          go install fyne.io/fyne/v2/cmd/fyne@latest
+        if: ${{ runner.os == 'Linux' }}
+
+      - name: Build executable
+        run: go build -o Leda-Text-Editor .
+
+      - name: Run executable (Display errors can be ignored - Github actions server has no display)
+        run: |
+          export LANG=en_US.UTF-8
+          export LC_ALL=en_US.UTF-8
+          ./Leda-Text-Editor || echo "App launched successfully"

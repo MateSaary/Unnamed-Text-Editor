@@ -3,6 +3,7 @@ package ui
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	handling "github.com/Leda-Editor/Leda-Text-Editor/pkg/handling"
 )
 
@@ -29,7 +30,9 @@ func (ui *UI) CreateMenuBar() *fyne.Container {
 	)
 
 	helpMenu := fyne.NewMenu("Help",
-		fyne.NewMenuItem("About", func() {}),
+		fyne.NewMenuItem("About", func() {
+			dialog.ShowInformation("About", "\n\nLeda is a text editor built with Go and Fyne.", ui.Window)
+		}),
 	)
 
 	mainMenu := fyne.NewMainMenu(fileMenu, viewMenu, editMenu, helpMenu)
