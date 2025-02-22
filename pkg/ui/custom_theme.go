@@ -12,6 +12,7 @@ type CustomTheme struct {
 	Background       color.Color
 	Foreground       color.Color
 	EditorBg         color.Color
+	Primary          color.Color
 	MenuBg           color.Color
 	ButtonBackground color.Color
 }
@@ -24,7 +25,7 @@ func (t *CustomTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant)
 	case theme.ColorNameForeground:
 		return t.Foreground
 	case theme.ColorNamePrimary:
-		return t.Foreground
+		return t.Primary
 	case theme.ColorNameInputBackground:
 		return t.EditorBg
 	case theme.ColorNameMenuBackground:
@@ -32,7 +33,7 @@ func (t *CustomTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant)
 	case theme.ColorNameButton:
 		return t.ButtonBackground
 	case theme.ColorNameSeparator:
-		return t.Foreground
+		return t.Primary
 	}
 	return theme.DefaultTheme().Color(name, variant) // Fallback to default
 }
@@ -58,6 +59,7 @@ func NewCustomTheme(bg, fg, primary, editorBg, menuBg, buttonBg color.Color) fyn
 		Background:       bg,
 		Foreground:       fg,
 		EditorBg:         editorBg,
+		Primary:          primary,
 		MenuBg:           menuBg,
 		ButtonBackground: buttonBg,
 	}
