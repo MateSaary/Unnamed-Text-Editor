@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// Initialize Fyne Application.
-	app := app.New()
+	app := app.NewWithID("leda-text-editor")
 
 	// Create a new window for the application
 	window := app.NewWindow("Leda Text Editor")

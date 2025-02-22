@@ -9,11 +9,12 @@ import (
 
 // CustomTheme defines a theme with user-defined colors.
 type CustomTheme struct {
-	Background color.Color
-	Foreground color.Color
-	Primary    color.Color
-	EditorBg   color.Color
-	MenuBg     color.Color
+	Background       color.Color
+	Foreground       color.Color
+	Primary          color.Color
+	EditorBg         color.Color
+	MenuBg           color.Color
+	ButtonBackground color.Color
 }
 
 // Color overrides default colors with custom values.
@@ -29,6 +30,8 @@ func (t *CustomTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant)
 		return t.EditorBg
 	case theme.ColorNameMenuBackground:
 		return t.MenuBg
+	case theme.ColorNameButton:
+		return t.ButtonBackground
 	}
 	return theme.DefaultTheme().Color(name, variant) // Fallback to default
 }
@@ -49,12 +52,13 @@ func (t *CustomTheme) Size(name fyne.ThemeSizeName) float32 {
 }
 
 // NewCustomTheme initializes a theme with user-defined colors.
-func NewCustomTheme(bg, fg, primary, editorBg, menuBg color.Color) fyne.Theme {
+func NewCustomTheme(bg, fg, primary, editorBg, menuBg, buttonBg color.Color) fyne.Theme {
 	return &CustomTheme{
-		Background: bg,
-		Foreground: fg,
-		Primary:    primary,
-		EditorBg:   editorBg,
-		MenuBg:     menuBg,
+		Background:       bg,
+		Foreground:       fg,
+		Primary:          primary,
+		EditorBg:         editorBg,
+		MenuBg:           menuBg,
+		ButtonBackground: primary,
 	}
 }
