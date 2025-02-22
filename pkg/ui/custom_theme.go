@@ -32,6 +32,8 @@ func (t *CustomTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant)
 		return t.MenuBg
 	case theme.ColorNameButton:
 		return t.ButtonBackground
+	case theme.ColorNameSeparator:
+		return t.Foreground
 	}
 	return theme.DefaultTheme().Color(name, variant) // Fallback to default
 }
@@ -59,6 +61,6 @@ func NewCustomTheme(bg, fg, primary, editorBg, menuBg, buttonBg color.Color) fyn
 		Primary:          primary,
 		EditorBg:         editorBg,
 		MenuBg:           menuBg,
-		ButtonBackground: primary,
+		ButtonBackground: buttonBg,
 	}
 }

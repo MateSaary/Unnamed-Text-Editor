@@ -3,33 +3,48 @@ package ui
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
 // Creates a split view with the editor and markdown preview.
 func (ui *UI) Layout() fyne.CanvasObject {
+	separator := widget.NewSeparator()
 
-	statusBar := container.NewHBox(
-		ui.CharacterLabel,
-		widget.NewLabel(" | "),
-		ui.LineLabel,
+	statusBar := container.NewVBox(
+		separator,
+		container.NewHBox(
+			ui.CharacterLabel,
+			widget.NewLabel(" | "),
+			ui.LineLabel,
+			layout.NewSpacer(),
+			ui.ZoomLabel,
+		),
 	)
 
-	sidebar := container.NewVBox(
-		widget.NewLabel("🔍 Search"),
-		ui.SearchTermEntry,
-		widget.NewButton("Search", func() { ui.performSearch() }),
-		ui.SearchResults,
-		widget.NewSeparator(),
-		widget.NewLabel("🔁 Replace"),
-		ui.ReplaceTermEntry,
-		widget.NewButton("Replace Current", func() { ui.performReplaceCurrent() }),
-		widget.NewButton("Replace All", func() { ui.performReplaceAll() }),
-		widget.NewSeparator(),
-		widget.NewButton("⬆️ Previous", func() { ui.previousMatch() }),
-		widget.NewButton("⬇️ Next", func() { ui.nextMatch() }),
-		widget.NewButton("❌ Close", func() { ui.toggleSidebar() }),
-	)
+	var sidebar fyne.CanvasObject = container.NewVBox()
+
+	if ui.SidebarVisible {
+		sidebar = container.NewVBox(
+			widget.NewLabel("🔍 Search"),
+			ui.SearchTermEntry,
+			widget.NewButton("Search", func() { ui.performSearch() }),
+			ui.SearchResults,
+			widget.NewSeparator(),
+		)
+
+		if ui.ReplaceTermEntry.Visible() {
+			sidebar.(*fyne.Container).Add(widget.NewLabel("🔁 Replace"))
+			sidebar.(*fyne.Container).Add(ui.ReplaceTermEntry)
+			sidebar.(*fyne.Container).Add(widget.NewButton("Replace Current", func() { ui.performReplaceCurrent() }))
+			sidebar.(*fyne.Container).Add(widget.NewButton("Replace All", func() { ui.performReplaceAll() }))
+			sidebar.(*fyne.Container).Add(widget.NewSeparator())
+		}
+
+		sidebar.(*fyne.Container).Add(widget.NewButton("⬆️ Previous", func() { ui.previousMatch() }))
+		sidebar.(*fyne.Container).Add(widget.NewButton("⬇️ Next", func() { ui.nextMatch() }))
+		sidebar.(*fyne.Container).Add(widget.NewButton("❌ Close", func() { ui.toggleSidebar() }))
+	}
 
 	var content fyne.CanvasObject
 	if ui.SidebarVisible {

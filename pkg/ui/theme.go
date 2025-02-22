@@ -12,9 +12,9 @@ import (
 
 // Theme struct extends Fyne's theme with custom font sizes for zoom in/out.
 type Theme struct {
-	App      fyne.App // Add this field to access app preferences
-	Base     fyne.Theme
-	FontSize float32
+	App         fyne.App // Add this field to access app preferences
+	Base        fyne.Theme
+	ZoomPercent int
 }
 
 const (
@@ -42,6 +42,9 @@ func ApplyUserTheme(ui *UI) {
 		ui.Layout(),    // Existing UI content
 	))
 
+	// Update Zoom Label
+	ui.UpdateZoomLabel()
+
 	// Ensure the window updates
 	ui.Window.Content().Refresh()
 }
@@ -50,7 +53,7 @@ func ApplyUserTheme(ui *UI) {
 func ToggleDarkMode(app fyne.App, ui *UI) {
 	// Retrieve saved theme preference
 	savedTheme := app.Preferences().StringWithFallback(theme_variant, "default")
-	currentFontSize := ui.Theme.FontSize
+	currentZoom := ui.Theme.ZoomPercent
 
 	// If a custom theme is active, reset to default before toggling
 	if savedTheme == "custom" {
@@ -69,9 +72,9 @@ func ToggleDarkMode(app fyne.App, ui *UI) {
 	}
 
 	ui.Theme = &Theme{
-		App:      app,
-		Base:     newTheme,
-		FontSize: currentFontSize,
+		App:         app,
+		Base:        newTheme,
+		ZoomPercent: currentZoom,
 	}
 
 	// Apply the new theme to the UI
@@ -91,9 +94,9 @@ func resetToDefaultTheme(app fyne.App) {
 	app.Preferences().RemoveValue(custom_button_bg)
 
 	app.Settings().SetTheme(&Theme{
-		App:      app,
-		Base:     theme.DefaultTheme(),
-		FontSize: theme.TextSize(), // Preserve font size
+		App:         app,
+		Base:        theme.DefaultTheme(),
+		ZoomPercent: 100, // Preserve font size
 	})
 }
 
@@ -110,21 +113,19 @@ func (ui *UI) ApplyThemeToLayout() fyne.CanvasObject {
 }
 
 // SetCustomTheme allows switching to a fully custom theme.
-func SetCustomTheme(app fyne.App, bg, fg, primary, editorBg, menuBg color.Color) {
-	var currentFontSize float32 = theme.TextSize()
+func SetCustomTheme(app fyne.App, bg, fg, primary, editorBg, menuBg, buttonBg color.Color) {
+	var currentZoom int = 100
 
-	// If the current theme is of type *Theme, keep its FontSize
+	// Preserve current zoom level if a custom theme is active
 	if existingTheme, ok := app.Settings().Theme().(*Theme); ok {
-		currentFontSize = existingTheme.FontSize
+		currentZoom = existingTheme.ZoomPercent
 	}
 
-	buttonBg := primary
-
-	// Apply the new theme but **keep zoom level**
+	// Apply the new theme
 	newTheme := &Theme{
-		App:      app,
-		Base:     NewCustomTheme(bg, fg, primary, editorBg, menuBg, buttonBg),
-		FontSize: currentFontSize, // Preserve zoom level
+		App:         app,
+		Base:        NewCustomTheme(bg, fg, primary, editorBg, menuBg, buttonBg),
+		ZoomPercent: currentZoom,
 	}
 
 	app.Settings().SetTheme(newTheme)
@@ -136,12 +137,12 @@ func SetCustomTheme(app fyne.App, bg, fg, primary, editorBg, menuBg color.Color)
 	saveColor(app, custom_primary, primary)
 	saveColor(app, custom_editor_bg, editorBg)
 	saveColor(app, custom_menu_bg, menuBg)
-	saveColor(app, "custom_button_bg", buttonBg)
+	saveColor(app, custom_button_bg, buttonBg)
 }
 
 // ResetCustomTheme removes all custom colors and resets to default theme.
 func ResetCustomTheme(app fyne.App, ui *UI) {
-	currentFontSize := ui.Theme.FontSize
+	currentZoom := ui.Theme.ZoomPercent
 	// Remove all custom theme preferences
 	app.Preferences().RemoveValue(custom_bg)
 	app.Preferences().RemoveValue(custom_fg)
@@ -155,9 +156,9 @@ func ResetCustomTheme(app fyne.App, ui *UI) {
 
 	// Restore UI with default theme
 	ui.Theme = &Theme{
-		App:      app,
-		Base:     theme.DefaultTheme(),
-		FontSize: currentFontSize, // Keep zoom level
+		App:         app,
+		Base:        theme.DefaultTheme(),
+		ZoomPercent: currentZoom, // Keep zoom level
 	}
 
 	app.Settings().SetTheme(ui.Theme)
@@ -204,31 +205,45 @@ func colorToRGBA(c color.Color) color.RGBA {
 // NewTheme instantiates a theme.
 func NewTheme(app fyne.App) *Theme {
 	return &Theme{
-		App:      app,
-		Base:     theme.DefaultTheme(),
-		FontSize: theme.TextSize(),
+		App:         app,
+		Base:        theme.DefaultTheme(),
+		ZoomPercent: 100,
 	}
 }
 
-// ZoomIn increases font size.
-func (th *Theme) ZoomIn() {
-	if th.FontSize < 36 { // Max limit to prevent excessive zooming
-		th.FontSize += 2
+// ZoomIn increases zoom level.
+func (th *Theme) ZoomIn(ui *UI) {
+	if th.ZoomPercent < 200 { // Max limit to prevent excessive zooming
+		th.ZoomPercent += 10
 	}
 	th.ApplyTheme()
+	ui.UpdateZoomLabel()
+	ui.Window.Content().Refresh()
 }
 
-// ZoomOut decreases font size.
-func (th *Theme) ZoomOut() {
-	if th.FontSize > 8 { // Min limit to keep text readable
-		th.FontSize -= 2
+// ZoomOut decreases zoom level.
+func (th *Theme) ZoomOut(ui *UI) {
+	if th.ZoomPercent > 50 { // Min limit to keep text readable
+		th.ZoomPercent -= 10
 	}
 	th.ApplyTheme()
+	ui.UpdateZoomLabel()
+	ui.Window.Content().Refresh()
+}
+
+// ResetZoom resets the zoom level.
+func (th *Theme) ResetZoom(ui *UI) {
+	th.ZoomPercent = 100
+	th.ApplyTheme()
+	ui.UpdateZoomLabel()
+	ui.Window.Content().Refresh()
 }
 
 // TextSize returns custom font size.
 func (th *Theme) TextSize() float32 {
-	return th.FontSize
+	baseSize := th.Base.Size(theme.SizeNameText)
+	scaleFactor := float32(th.ZoomPercent) / 100.0
+	return baseSize * scaleFactor
 }
 
 // ApplyTheme applies the theme while preserving custom colors.
@@ -241,12 +256,12 @@ func (th *Theme) ApplyTheme() {
 	primary := loadColor(app, custom_primary, colorToRGBA(theme.Color(theme.ColorNamePrimary)))
 	editorBg := loadColor(app, custom_editor_bg, colorToRGBA(theme.Color(theme.ColorNameInputBackground)))
 	menuBg := loadColor(app, custom_menu_bg, colorToRGBA(theme.Color(theme.ColorNameMenuBackground)))
-	buttonBg := loadColor(app, custom_button_bg, primary)
+	buttonBg := loadColor(app, custom_button_bg, colorToRGBA(theme.Color(theme.ColorNameButton)))
 
 	// Apply the new theme while maintaining colors and font size
 	newTheme := &Theme{
-		Base:     NewCustomTheme(bg, fg, primary, editorBg, menuBg, buttonBg),
-		FontSize: th.FontSize,
+		Base:        NewCustomTheme(bg, fg, primary, editorBg, menuBg, buttonBg),
+		ZoomPercent: th.ZoomPercent,
 	}
 
 	app.Settings().SetTheme(newTheme)
@@ -255,7 +270,7 @@ func (th *Theme) ApplyTheme() {
 // Size returns the custom (or base) size.
 func (th *Theme) Size(name fyne.ThemeSizeName) float32 {
 	if name == theme.SizeNameText {
-		return th.FontSize
+		return th.TextSize()
 	}
 	return th.Base.Size(name)
 }
