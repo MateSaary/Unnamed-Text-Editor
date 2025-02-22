@@ -162,7 +162,7 @@ func ResetCustomTheme(app fyne.App, ui *UI) {
 	}
 
 	app.Settings().SetTheme(ui.Theme)
-	ApplyUserTheme(ui) // Ensure the UI updates
+	ApplyUserTheme(ui)
 	ui.Window.Content().Refresh()
 }
 
@@ -216,6 +216,16 @@ func (th *Theme) ZoomIn(ui *UI) {
 	if th.ZoomPercent < 200 { // Max limit to prevent excessive zooming
 		th.ZoomPercent += 10
 	}
+	app := fyne.CurrentApp()
+	bg := loadColor(app, custom_bg, colorToRGBA(theme.Color(theme.ColorNameBackground)))
+	fg := loadColor(app, custom_fg, colorToRGBA(theme.Color(theme.ColorNameForeground)))
+	primary := loadColor(app, custom_primary, colorToRGBA(theme.Color(theme.ColorNamePrimary)))
+	editorBg := loadColor(app, custom_editor_bg, colorToRGBA(theme.Color(theme.ColorNameInputBackground)))
+	menuBg := loadColor(app, custom_menu_bg, colorToRGBA(theme.Color(theme.ColorNameMenuBackground)))
+	buttonBg := loadColor(app, custom_button_bg, colorToRGBA(theme.Color(theme.ColorNameButton))) // Ensure separate
+
+	// Apply theme with updated font size and colors
+	th.Base = NewCustomTheme(bg, fg, primary, editorBg, menuBg, buttonBg)
 	th.ApplyTheme()
 	ui.UpdateZoomLabel()
 	ui.Window.Content().Refresh()
@@ -226,6 +236,16 @@ func (th *Theme) ZoomOut(ui *UI) {
 	if th.ZoomPercent > 50 { // Min limit to keep text readable
 		th.ZoomPercent -= 10
 	}
+	app := fyne.CurrentApp()
+	bg := loadColor(app, custom_bg, colorToRGBA(theme.Color(theme.ColorNameBackground)))
+	fg := loadColor(app, custom_fg, colorToRGBA(theme.Color(theme.ColorNameForeground)))
+	primary := loadColor(app, custom_primary, colorToRGBA(theme.Color(theme.ColorNamePrimary)))
+	editorBg := loadColor(app, custom_editor_bg, colorToRGBA(theme.Color(theme.ColorNameInputBackground)))
+	menuBg := loadColor(app, custom_menu_bg, colorToRGBA(theme.Color(theme.ColorNameMenuBackground)))
+	buttonBg := loadColor(app, custom_button_bg, colorToRGBA(theme.Color(theme.ColorNameButton))) // Ensure separate
+
+	// Apply theme with updated font size and colors
+	th.Base = NewCustomTheme(bg, fg, primary, editorBg, menuBg, buttonBg)
 	th.ApplyTheme()
 	ui.UpdateZoomLabel()
 	ui.Window.Content().Refresh()
