@@ -29,15 +29,15 @@ func OpenThemePickerModal(app fyne.App, win fyne.Window, ui *UI) {
 	// Get current window size
 	windowSize := win.Canvas().Size()
 
-	// Get the current font size to adjust modal size dynamically
-	currentFontSize := ui.Theme.FontSize
+	// Get current zoom level as a scale factor
+	zoomFactor := float32(ui.Theme.ZoomPercent) / 100.0
 	// Set modal size
-	modalWidth := windowSize.Width * 0.5
-	modalHeight := windowSize.Height * 0.8
+	modalWidth := windowSize.Width * 0.5 * zoomFactor
+	modalHeight := windowSize.Height * 0.8 * zoomFactor
 
 	// Adjust modal size based on zoom level
-	minHeight := 200 + int(currentFontSize*3) // Increase height slightly based on zoom
-	maxHeight := int(windowSize.Height * 0.8) // Max modal height (60% of window height)
+	minHeight := float32(200) * zoomFactor
+	maxHeight := windowSize.Height * 0.8 * zoomFactor
 
 	// Ensure modal stays within the min and max height limits
 	if modalHeight < float32(minHeight) {
@@ -55,8 +55,10 @@ func OpenThemePickerModal(app fyne.App, win fyne.Window, ui *UI) {
 	bg := loadColor(app, custom_bg, colorToRGBA(theme.Color(theme.ColorNameBackground)))
 	fg := loadColor(app, custom_fg, colorToRGBA(theme.Color(theme.ColorNameForeground)))
 	primary := loadColor(app, custom_primary, colorToRGBA(theme.Color(theme.ColorNamePrimary)))
+
 	editorBg := loadColor(app, custom_editor_bg, colorToRGBA(theme.Color(theme.ColorNameInputBackground)))
 	menuBg := loadColor(app, custom_menu_bg, colorToRGBA(theme.Color(theme.ColorNameMenuBackground)))
+	buttonBg := loadColor(app, custom_button_bg, colorToRGBA(theme.Color(theme.ColorNameButton)))
 
 	// Ensure modal background correctly matches selected background
 	modalBackground.FillColor = bg
@@ -68,6 +70,7 @@ func OpenThemePickerModal(app fyne.App, win fyne.Window, ui *UI) {
 	primaryPreview := canvas.NewRectangle(primary)
 	editorBgPreview := canvas.NewRectangle(editorBg)
 	menuBgPreview := canvas.NewRectangle(menuBg)
+	buttonBgPreview := canvas.NewRectangle(buttonBg)
 
 	// Helper function to create RGB sliders
 	createRGBSliders := func(label string, c *color.RGBA, preview *canvas.Rectangle) fyne.CanvasObject {
@@ -115,7 +118,7 @@ func OpenThemePickerModal(app fyne.App, win fyne.Window, ui *UI) {
 
 	// Save button
 	saveThemeBtn := widget.NewButton("Save", func() {
-		SetCustomTheme(app, bg, fg, primary, editorBg, menuBg)
+		SetCustomTheme(app, bg, fg, primary, editorBg, menuBg, buttonBg)
 		ui.Window.SetContent(ui.ApplyThemeToLayout())
 		ui.Window.Content().Refresh()
 		modal.Hide()
@@ -138,9 +141,10 @@ func OpenThemePickerModal(app fyne.App, win fyne.Window, ui *UI) {
 		container.NewVBox(
 			createRGBSliders("Background Colour", &bg, bgPreview),
 			createRGBSliders("Text Colour", &fg, fgPreview),
-			createRGBSliders("Button Colour", &primary, primaryPreview),
+			createRGBSliders("Primary Colour", &primary, primaryPreview),
 			createRGBSliders("Editor Background Colour", &editorBg, editorBgPreview),
 			createRGBSliders("Menu Background Colour", &menuBg, menuBgPreview),
+			createRGBSliders("Button Colour", &buttonBg, buttonBgPreview),
 			buttonsContainer,
 		),
 	)
@@ -158,8 +162,9 @@ func OpenThemePickerModal(app fyne.App, win fyne.Window, ui *UI) {
 			newSize := win.Canvas().Size()
 
 			// Adjust modal size based on zoom level
-			modalWidth = newSize.Width * 0.5
-			modalHeight = newSize.Height * 0.8
+			zoomFactor := float32(ui.Theme.ZoomPercent) / 100.0
+			modalWidth = newSize.Width * 0.5 * zoomFactor
+			modalHeight = newSize.Height * 0.8 * zoomFactor
 
 			// Apply constraints to prevent cutting off
 			if modalHeight < float32(minHeight) {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -29,6 +30,8 @@ type UI struct {
 	LineLabel      *widget.Label
 
 	// Search/Replace Sidebar
+	// SearchAreaContainer Holds Search UI
+	SearchAreaContainer *fyne.Container
 	// SearchTermEntry where you can type text to find.
 	SearchTermEntry *widget.Entry
 	// ReplaceTermEntry where you can type text to replace matched occurrences.
@@ -46,6 +49,8 @@ type UI struct {
 
 	// Markdown visibility toggle
 	ShowMarkdown bool
+
+	ZoomLabel *widget.Label
 }
 
 // NewUI initializes the UI.
@@ -53,21 +58,23 @@ func NewUI(app fyne.App, win fyne.Window) *UI {
 	theme := NewTheme(app)
 
 	ui := &UI{
-		App:              app,
-		Window:           win,
-		Editor:           widget.NewMultiLineEntry(),
-		Markdown:         widget.NewRichTextFromMarkdown(""),
-		Theme:            theme,
-		CharacterLabel:   widget.NewLabelWithStyle("Characters: 0", fyne.TextAlignLeading, fyne.TextStyle{Bold: false}),
-		LineLabel:        widget.NewLabelWithStyle("Lines: 0", fyne.TextAlignLeading, fyne.TextStyle{Bold: false}),
-		SearchTermEntry:  widget.NewEntry(),
-		ReplaceTermEntry: widget.NewEntry(),
-		SearchResults:    widget.NewLabel("Results: 0"),
-		SidebarVisible:   false,
-		Matches:          []int{},
-		CurrentMatchIdx:  -1,
-		OriginalText:     "",
-		ShowMarkdown:     true,
+		App:                 app,
+		Window:              win,
+		Editor:              widget.NewMultiLineEntry(),
+		Markdown:            widget.NewRichTextFromMarkdown(""),
+		Theme:               theme,
+		CharacterLabel:      widget.NewLabelWithStyle("Characters: 0", fyne.TextAlignLeading, fyne.TextStyle{Bold: false}),
+		LineLabel:           widget.NewLabelWithStyle("Lines: 0", fyne.TextAlignLeading, fyne.TextStyle{Bold: false}),
+		SearchAreaContainer: container.NewVBox(),
+		SearchTermEntry:     widget.NewEntry(),
+		ReplaceTermEntry:    widget.NewEntry(),
+		SearchResults:       widget.NewLabel("Results: 0"),
+		SidebarVisible:      false,
+		Matches:             []int{},
+		CurrentMatchIdx:     -1,
+		OriginalText:        "",
+		ShowMarkdown:        true,
+		ZoomLabel:           widget.NewLabelWithStyle("ZoomL 100%", fyne.TextAlignCenter, fyne.TextStyle{Bold: false}),
 	}
 
 	ui.MenuBar = ui.CreateMenuBar()
@@ -94,13 +101,22 @@ func (ui *UI) RenderMarkdown(input string) {
 
 // Zoom In/Out.
 func (ui *UI) ZoomIn() {
-	ui.Theme.ZoomIn()
+	ui.Theme.ZoomIn(ui)
+	ui.UpdateZoomLabel()
 }
 
 func (ui *UI) ZoomOut() {
-	ui.Theme.ZoomOut()
+	ui.Theme.ZoomOut(ui)
+	ui.UpdateZoomLabel()
 }
 
+// Reset Zoom.
+func (ui *UI) ResetZoom() {
+	ui.Theme.ZoomPercent = 100
+	ui.Theme.ApplyTheme()
+	ui.UpdateZoomLabel()
+	ui.Window.Content().Refresh()
+}
 
 // Toggle visibility of Markdown preview.
 func (ui *UI) toggleMarkdownPreview() {
@@ -110,10 +126,15 @@ func (ui *UI) toggleMarkdownPreview() {
 
 // Update character & line counts.
 func (ui *UI) UpdateCounts(content string) {
-	charCount := len(content)                                    // Count characters.
-	lineCount := len(widget.NewTextGridFromString(content).Rows) // Count lines.
+	charCount := len(content)
+	lineCount := len(widget.NewTextGridFromString(content).Rows)
 
 	// Update the labels.
 	ui.CharacterLabel.SetText(fmt.Sprintf("Characters: %d", charCount))
 	ui.LineLabel.SetText(fmt.Sprintf("Lines: %d", lineCount))
+}
+
+func (ui *UI) UpdateZoomLabel() {
+	ui.ZoomLabel.SetText(fmt.Sprintf("Zoom: %d%%", ui.Theme.ZoomPercent))
+	ui.Window.Content().Refresh()
 }

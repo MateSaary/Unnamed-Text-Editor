@@ -18,6 +18,8 @@ func (ui *UI) CreateMenuBar() *fyne.Container {
 	viewMenu := fyne.NewMenu("View",
 		fyne.NewMenuItem("Zoom Out", func() { ui.ZoomOut() }),
 		fyne.NewMenuItem("Zoom In", func() { ui.ZoomIn() }),
+		fyne.NewMenuItem("Reset Zoom", func() { ui.ResetZoom() }),
+		fyne.NewMenuItemSeparator(),
 		fyne.NewMenuItem("Show/Hide Markdown Preview", func() { ui.toggleMarkdownPreview() }),
 		fyne.NewMenuItem("Dark Mode On/Off", func() { ToggleDarkMode(ui.App, ui) }),
 		fyne.NewMenuItem("Set Custom Theme", func() {
@@ -26,7 +28,8 @@ func (ui *UI) CreateMenuBar() *fyne.Container {
 	)
 
 	editMenu := fyne.NewMenu("Edit",
-		fyne.NewMenuItem("Find/Replace", func() { ui.toggleSidebar() }),
+		fyne.NewMenuItem("Search", func() { ShowSearchUI(false, ui) }),
+		fyne.NewMenuItem("Search & Replace", func() { ShowSearchUI(true, ui) }),
 	)
 
 	helpMenu := fyne.NewMenu("Help",
